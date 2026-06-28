@@ -1,0 +1,21 @@
+{
+  "name": "ecommerce-sales-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace backend & npm run dev --workspace frontend",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "lint": "npm run lint --workspace backend && npm run lint --workspace frontend",
+    "format": "npm run format --workspaces",
+    "test": "npm run test --workspace backend",
+    "test:integration": "npm run test:integration --workspace backend",
+    "etl:run": "npm run etl:run --workspace backend"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

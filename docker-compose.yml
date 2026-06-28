@@ -1,0 +1,69 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ecommerce-sales-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ecommerce}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ecommerce}
+      POSTGRES_DB: ${POSTGRES_DB:-ecommerce_sales}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # CORRECCIÓN: Se añadió /data al final de la ruta del contenedor
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecommerce} -d ${POSTGRES_DB:-ecommerce_sales}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ecommerce-sales-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+  backend:
+    build:
+      context: ./backend
+    container_name: ecommerce-sales-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: ${BACKEND_PORT:-4000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://ecommerce:ecommerce@db:5432/ecommerce_sales?schema=gold}
+      OLIST_DATASET_BASE_URL: ${OLIST_DATASET_BASE_URL:-https://raw.githubusercontent.com/olist/work-at-olist-data/master/datasets}
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
+      - ./backend/data:/app/data
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: ecommerce-sales-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      # NOTA TÉCNICA: localhost:4000 funciona para peticiones desde el navegador (Cliente). 
+      # Si usas Server Components (SSR) en Next.js, deberás usar http://backend:4000
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:4000}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+
+volumes:
+  postgres_data:

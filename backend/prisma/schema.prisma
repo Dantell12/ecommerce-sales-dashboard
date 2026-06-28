@@ -1,0 +1,93 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["gold"]
+}
+
+model DimDate {
+  dateKey   Int      @id @map("date_key")
+  fullDate  DateTime @map("full_date") @db.Date
+  year      Int
+  quarter   Int
+  month     Int
+  week      Int
+  dayOfWeek Int      @map("day_of_week")
+
+  sales FactSales[]
+
+  @@map("dim_date")
+  @@schema("gold")
+}
+
+model DimCustomer {
+  customerKey      Int     @id @default(autoincrement()) @map("customer_key")
+  customerId       String  @unique @map("customer_id")
+  customerUniqueId String? @map("customer_unique_id")
+  state            String? @map("state")
+  city             String? @map("city")
+
+  sales FactSales[]
+
+  @@map("dim_customer")
+  @@schema("gold")
+}
+
+model DimProduct {
+  productKey Int     @id @default(autoincrement()) @map("product_key")
+  productId  String  @unique @map("product_id")
+  category   String? @map("category")
+
+  sales FactSales[]
+
+  @@map("dim_product")
+  @@schema("gold")
+}
+
+model DimOrder {
+  orderKey                      Int       @id @default(autoincrement()) @map("order_key")
+  orderId                       String    @unique @map("order_id")
+  status                        String    @map("status")
+  orderPurchaseTimestamp        DateTime  @map("order_purchase_timestamp")
+  orderApprovedAt               DateTime? @map("order_approved_at")
+  deliveredCustomerDate         DateTime? @map("delivered_customer_date")
+  estimatedDeliveryDate         DateTime? @map("estimated_delivery_date")
+
+  sales FactSales[]
+
+  @@map("dim_order")
+  @@schema("gold")
+}
+
+model FactSales {
+  orderId               String  @map("order_id")
+  orderItemId           Int     @map("order_item_id")
+  dateKey               Int     @map("date_key")
+  customerKey           Int     @map("customer_key")
+  productKey            Int     @map("product_key")
+  orderKey              Int     @map("order_key")
+  itemPrice             Decimal @map("item_price") @db.Decimal(14, 2)
+  freightValue          Decimal @map("freight_value") @db.Decimal(14, 2)
+  paymentValueAllocated Decimal @map("payment_value_allocated") @db.Decimal(14, 2)
+  isDelivered           Boolean @map("is_delivered")
+  isCanceled            Boolean @map("is_canceled")
+  isOnTime              Boolean @map("is_on_time")
+
+  date     DimDate     @relation(fields: [dateKey], references: [dateKey])
+  customer DimCustomer @relation(fields: [customerKey], references: [customerKey])
+  product  DimProduct  @relation(fields: [productKey], references: [productKey])
+  order    DimOrder    @relation(fields: [orderKey], references: [orderKey])
+
+  @@id([orderId, orderItemId])
+  @@index([dateKey])
+  @@index([customerKey])
+  @@index([productKey])
+  @@index([orderKey])
+  @@map("fact_sales")
+  @@schema("gold")
+}
