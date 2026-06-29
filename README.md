@@ -400,16 +400,6 @@ proyecto/
 
 ---
 
-## 📚 Documentación Completa
-
-Para documentación detallada sobre:
-- **Arquitectura hexagonal:** Ver `ARCHITECTURE.md`
-- **ETL y transformaciones:** Ver `ETL.md`
-- **Decisiones técnicas:** Ver `DECISIONS.md`
-- **Preguntas de entrevista:** Ver `INTERVIEW.md`
-
----
-
 ## 🌳 Dataset
 
 El ETL descarga y carga **9 CSV files** desde GitHub:
