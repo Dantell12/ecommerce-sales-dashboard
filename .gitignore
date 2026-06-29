@@ -13,6 +13,11 @@ BACKEND_API_AUDIT.md
 DOCKER_ETL_AUDIT.md
 FRONTEND_NEXTJS_AUDIT.md
 REPO_STRUCTURE_AUDIT.md
+graphify-out/
+graphify-out/*
+AGENTS.MD
+Prueba_Tecnica.md
+prueba_tecnica_fullstack_L1.pdf
 graphify-out/.graphify_root
 graphify-out/GRAPH_REPORT.md
 graphify-out/graph.html
@@ -39,3 +44,5 @@ graphify-out/cache/ast/e5daadb5c5c2b8b1dd153a496c3a7cdb9820821dbf59f5fddfca52452
 graphify-out/cache/ast/e8a6a3d6abd1aba439404d95dd21c5e88a5e3264d7c75612587a54c7c6811153.json
 graphify-out/cache/ast/e31fb4d8a1dd0cdbfa3c8f0ba80e7686b2c631c1a0f15158636ba7719ed0c62c.json
 graphify-out/cache/ast/eff05c54f73cb6742b9606fedef05ce8ef7cfd296767c4bd21734173e32cf813.json
+PROYECTO_DOCUMENTACION_ESTUDIO.md
+CODEX_CORRECTION_PROMPT.md

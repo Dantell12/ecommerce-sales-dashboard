@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchKpis, fetchRevenueTrend, fetchTopProducts } from '@/services/api';
+import { fetchKpis, fetchTopProducts } from '@/services/api';
 import type {
   AnalyticsFilters,
   KpiSummary,
@@ -17,7 +17,10 @@ interface DashboardData {
   error: string | null;
 }
 
-export function useDashboardData(filters: AnalyticsFilters): DashboardData {
+export function useDashboardData(
+  filters: AnalyticsFilters,
+  rankingMetric: 'gmv' | 'revenue',
+): DashboardData {
   const [data, setData] = useState<DashboardData>({
     kpis: null,
     trend: [],
@@ -33,14 +36,13 @@ export function useDashboardData(filters: AnalyticsFilters): DashboardData {
       setData((current) => ({ ...current, isLoading: true, error: null }));
 
       try {
-        const [kpis, trend, topProducts] = await Promise.all([
+        const [kpis, topProducts] = await Promise.all([
           fetchKpis(filters),
-          fetchRevenueTrend(filters, 'day'),
-          fetchTopProducts(filters, 'gmv', 10),
+          fetchTopProducts(filters, rankingMetric, 10),
         ]);
 
         if (isMounted) {
-          setData({ kpis, trend, topProducts, isLoading: false, error: null });
+          setData({ kpis, trend: kpis.revenueTrend, topProducts, isLoading: false, error: null });
         }
       } catch (error) {
         if (isMounted) {
@@ -60,7 +62,7 @@ export function useDashboardData(filters: AnalyticsFilters): DashboardData {
     return () => {
       isMounted = false;
     };
-  }, [filters]);
+  }, [filters, rankingMetric]);
 
   return data;
 }

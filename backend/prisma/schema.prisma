@@ -50,13 +50,13 @@ model DimProduct {
 }
 
 model DimOrder {
-  orderKey                      Int       @id @default(autoincrement()) @map("order_key")
-  orderId                       String    @unique @map("order_id")
-  status                        String    @map("status")
-  orderPurchaseTimestamp        DateTime  @map("order_purchase_timestamp")
-  orderApprovedAt               DateTime? @map("order_approved_at")
-  deliveredCustomerDate         DateTime? @map("delivered_customer_date")
-  estimatedDeliveryDate         DateTime? @map("estimated_delivery_date")
+  orderKey               Int       @id @default(autoincrement()) @map("order_key")
+  orderId                String    @unique @map("order_id")
+  status                 String    @map("status")
+  orderPurchaseTimestamp DateTime  @map("order_purchase_timestamp")
+  orderApprovedAt        DateTime? @map("order_approved_at")
+  deliveredCustomerDate  DateTime? @map("delivered_customer_date")
+  estimatedDeliveryDate  DateTime? @map("estimated_delivery_date")
 
   sales FactSales[]
 

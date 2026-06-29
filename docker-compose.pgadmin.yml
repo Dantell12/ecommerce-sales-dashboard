@@ -1,0 +1,13 @@
+services:
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ecommerce-sales-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy

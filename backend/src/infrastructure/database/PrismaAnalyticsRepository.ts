@@ -3,7 +3,7 @@ import type {
   AnalyticsFilters,
   AnalyticsRepository,
   DateGrain,
-  KpiSummary,
+  KpiMetrics,
   ProductRankingMetric,
   RevenueTrendPoint,
   TopProduct,
@@ -21,7 +21,7 @@ type KpiRow = {
 };
 
 type TrendRow = {
-  period: Date;
+  period: Date | string;
   revenue_paid: NumericValue | null;
   orders: bigint;
 };
@@ -43,7 +43,7 @@ type QueryParts = {
 export class PrismaAnalyticsRepository implements AnalyticsRepository {
   constructor(private readonly db: PrismaClient) {}
 
-  async getKpis(filters: AnalyticsFilters): Promise<KpiSummary> {
+  async getKpiSummary(filters: AnalyticsFilters): Promise<KpiMetrics> {
     const query = this.buildWhere(filters);
     const rows = await this.db.$queryRawUnsafe<KpiRow[]>(
       `
@@ -84,31 +84,44 @@ export class PrismaAnalyticsRepository implements AnalyticsRepository {
     };
   }
 
-  async getRevenueTrend(
-    filters: AnalyticsFilters,
-    grain: DateGrain,
-  ): Promise<RevenueTrendPoint[]> {
+  async getRevenueTrend(filters: AnalyticsFilters, grain: DateGrain): Promise<RevenueTrendPoint[]> {
     const truncUnit = grain === 'week' ? 'week' : 'day';
+    const step = grain === 'week' ? '1 week' : '1 day';
     const query = this.buildWhere(filters);
     const rows = await this.db.$queryRawUnsafe<TrendRow[]>(
       `
+      WITH date_range AS (
+        SELECT generate_series(
+          DATE_TRUNC('${truncUnit}', $1::date)::date,
+          DATE_TRUNC('${truncUnit}', $2::date)::date,
+          INTERVAL '${step}'
+        )::date AS period
+      ),
+      aggregated AS (
+        SELECT
+          DATE_TRUNC('${truncUnit}', o.order_purchase_timestamp)::date AS period,
+          COALESCE(SUM(fs.payment_value_allocated), 0) AS revenue_paid,
+          COUNT(DISTINCT fs.order_id) AS orders
+        FROM gold.fact_sales fs
+        JOIN gold.dim_order o ON o.order_key = fs.order_key
+        JOIN gold.dim_product p ON p.product_key = fs.product_key
+        JOIN gold.dim_customer c ON c.customer_key = fs.customer_key
+        WHERE ${query.whereSql}
+        GROUP BY 1
+      )
       SELECT
-        DATE_TRUNC('${truncUnit}', o.order_purchase_timestamp)::date AS period,
-        COALESCE(SUM(fs.payment_value_allocated), 0) AS revenue_paid,
-        COUNT(DISTINCT fs.order_id) AS orders
-      FROM gold.fact_sales fs
-      JOIN gold.dim_order o ON o.order_key = fs.order_key
-      JOIN gold.dim_product p ON p.product_key = fs.product_key
-      JOIN gold.dim_customer c ON c.customer_key = fs.customer_key
-      WHERE ${query.whereSql}
-      GROUP BY 1
-      ORDER BY 1 ASC
+        dr.period,
+        COALESCE(a.revenue_paid, 0) AS revenue_paid,
+        COALESCE(a.orders, 0) AS orders
+      FROM date_range dr
+      LEFT JOIN aggregated a ON a.period = dr.period
+      ORDER BY dr.period ASC
       `,
       ...query.params,
     );
 
     return rows.map((row) => ({
-      period: row.period.toISOString().slice(0, 10),
+      period: this.toIsoDate(row.period),
       revenuePaid: this.toNumber(row.revenue_paid),
       orders: Number(row.orders),
     }));
@@ -160,18 +173,18 @@ export class PrismaAnalyticsRepository implements AnalyticsRepository {
       "o.order_purchase_timestamp < ($2::date + INTERVAL '1 day')",
     ];
 
-    if (filters.orderStatus) {
-      params.push(filters.orderStatus);
+    if (filters.order_status) {
+      params.push(filters.order_status);
       conditions.push(`o.status = $${params.length}`);
     }
 
-    if (filters.productCategory) {
-      params.push(filters.productCategory);
+    if (filters.product_category_name) {
+      params.push(filters.product_category_name);
       conditions.push(`p.category = $${params.length}`);
     }
 
-    if (filters.customerState) {
-      params.push(filters.customerState);
+    if (filters.customer_state) {
+      params.push(filters.customer_state);
       conditions.push(`c.state = $${params.length}`);
     }
 
@@ -183,5 +196,9 @@ export class PrismaAnalyticsRepository implements AnalyticsRepository {
 
   private toNumber(value: NumericValue | null | undefined): number {
     return value ? Number(value) : 0;
+  }
+
+  private toIsoDate(value: Date | string): string {
+    return value instanceof Date ? value.toISOString().slice(0, 10) : value.slice(0, 10);
   }
 }

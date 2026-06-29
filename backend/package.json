@@ -12,6 +12,7 @@
     "test": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "prisma:generate": "prisma generate",
+    "seed": "ts-node src/infrastructure/database/seed.ts",
     "etl:run": "ts-node src/infrastructure/etl/runEtl.ts"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "@typescript-eslint/parser": "^8.18.2",
     "eslint": "^8.57.1",
     "prettier": "^3.4.2",
+    "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^5.22.0",
     "supertest": "^7.0.0",
     "ts-node": "^10.9.2",

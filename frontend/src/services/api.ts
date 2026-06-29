@@ -44,8 +44,13 @@ async function request<T>(pathname: string, params: RequestParams): Promise<T> {
   const response = await fetch(url, { cache: 'no-store' });
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error ?? `Request failed with status ${response.status}`);
+    const body = (await response.json().catch(() => null)) as {
+      error?: string;
+      message?: string;
+    } | null;
+    throw new Error(
+      body?.message ?? body?.error ?? `Request failed with status ${response.status}`,
+    );
   }
 
   return response.json() as Promise<T>;

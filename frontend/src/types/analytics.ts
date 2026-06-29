@@ -1,12 +1,12 @@
 export interface AnalyticsFilters {
   from: string;
   to: string;
-  orderStatus?: string;
-  productCategory?: string;
-  customerState?: string;
+  order_status?: string;
+  product_category_name?: string;
+  customer_state?: string;
 }
 
-export interface KpiSummary {
+export interface KpiMetrics {
   gmv: number;
   shipping: number;
   revenuePaid: number;
@@ -15,6 +15,12 @@ export interface KpiSummary {
   itemsPerOrder: number;
   cancellationRate: number;
   onTimeDeliveryRate: number;
+}
+
+export interface KpiSummary extends KpiMetrics {
+  topProductsByGmv: TopProduct[];
+  topProductsByRevenue: TopProduct[];
+  revenueTrend: RevenueTrendPoint[];
 }
 
 export interface RevenueTrendPoint {

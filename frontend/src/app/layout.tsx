@@ -3,12 +3,12 @@ import './styles.css';
 
 export const metadata: Metadata = {
   title: 'E-commerce Sales Dashboard',
-  description: 'Sales analytics dashboard for the Olist e-commerce dataset',
+  description: 'Panel de ventas para el dataset e-commerce de Olist',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body>{children}</body>
     </html>
   );

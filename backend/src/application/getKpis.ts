@@ -3,7 +3,14 @@ import type { AnalyticsFilters, AnalyticsRepository, KpiSummary } from '../domai
 export class GetKpis {
   constructor(private readonly analyticsRepository: AnalyticsRepository) {}
 
-  execute(filters: AnalyticsFilters): Promise<KpiSummary> {
-    return this.analyticsRepository.getKpis(filters);
+  async execute(filters: AnalyticsFilters): Promise<KpiSummary> {
+    const [summary, topProductsByGmv, topProductsByRevenue, revenueTrend] = await Promise.all([
+      this.analyticsRepository.getKpiSummary(filters),
+      this.analyticsRepository.getTopProducts(filters, 'gmv', 10),
+      this.analyticsRepository.getTopProducts(filters, 'revenue', 10),
+      this.analyticsRepository.getRevenueTrend(filters, 'day'),
+    ]);
+
+    return { ...summary, topProductsByGmv, topProductsByRevenue, revenueTrend };
   }
 }

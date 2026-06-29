@@ -36,3 +36,28 @@ CREATE TABLE IF NOT EXISTS clean.products (
   product_id text PRIMARY KEY,
   category text
 );
+
+CREATE TABLE IF NOT EXISTS clean.order_reviews (
+  review_id text PRIMARY KEY,
+  order_id text NOT NULL,
+  review_score integer,
+  review_comment_title text,
+  review_comment_message text,
+  review_creation_date timestamp,
+  review_answer_timestamp timestamp
+);
+
+CREATE TABLE IF NOT EXISTS clean.sellers (
+  seller_id text PRIMARY KEY,
+  seller_zip_code_prefix text,
+  seller_city text,
+  seller_state text
+);
+
+CREATE TABLE IF NOT EXISTS clean.geolocation (
+  geolocation_zip_code_prefix text PRIMARY KEY,
+  geolocation_lat numeric(10, 6),
+  geolocation_lng numeric(10, 6),
+  geolocation_city text,
+  geolocation_state text
+);

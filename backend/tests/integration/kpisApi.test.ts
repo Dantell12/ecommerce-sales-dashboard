@@ -4,7 +4,7 @@ import { createApp } from '../../src/adapters/http/app';
 import type { AnalyticsRepository } from '../../src/domain/analytics';
 
 const repository: AnalyticsRepository = {
-  getKpis: async () => ({
+  getKpiSummary: async () => ({
     gmv: 100,
     shipping: 15,
     revenuePaid: 120,
@@ -34,6 +34,9 @@ describe('GET /kpis', () => {
       itemsPerOrder: 1.5,
       cancellationRate: 0,
       onTimeDeliveryRate: 1,
+      topProductsByGmv: [],
+      topProductsByRevenue: [],
+      revenueTrend: [],
     });
   });
 
@@ -43,6 +46,10 @@ describe('GET /kpis', () => {
       .query({ from: '2018-02-01', to: '2018-01-01' })
       .expect(400);
 
-    expect(response.body.error).toContain('from must be less than or equal to to');
+    expect(response.body).toMatchObject({
+      statusCode: 400,
+      code: 'VALIDATION_ERROR',
+      message: 'from must be less than or equal to to',
+    });
   });
 });

@@ -52,3 +52,15 @@ CREATE INDEX IF NOT EXISTS idx_fact_sales_date_key ON gold.fact_sales(date_key);
 CREATE INDEX IF NOT EXISTS idx_fact_sales_customer_key ON gold.fact_sales(customer_key);
 CREATE INDEX IF NOT EXISTS idx_fact_sales_product_key ON gold.fact_sales(product_key);
 CREATE INDEX IF NOT EXISTS idx_fact_sales_order_key ON gold.fact_sales(order_key);
+
+CREATE INDEX IF NOT EXISTS idx_dim_order_purchase_timestamp
+  ON gold.dim_order(order_purchase_timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_dim_order_status
+  ON gold.dim_order(status);
+
+CREATE INDEX IF NOT EXISTS idx_dim_product_category
+  ON gold.dim_product(category);
+
+CREATE INDEX IF NOT EXISTS idx_dim_customer_state
+  ON gold.dim_customer(state);

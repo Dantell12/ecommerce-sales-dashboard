@@ -11,6 +11,9 @@ const emptyKpis: KpiSummary = {
   itemsPerOrder: 0,
   cancellationRate: 0,
   onTimeDeliveryRate: 0,
+  topProductsByGmv: [],
+  topProductsByRevenue: [],
+  revenueTrend: [],
 };
 
 describe('GetKpis', () => {
@@ -40,9 +43,13 @@ describe('GetKpis', () => {
   it('passes date and optional filters to the analytics repository', async () => {
     let receivedFilters: unknown;
     const repository: AnalyticsRepository = {
-      getKpis: async (filters) => {
+      getKpiSummary: async (filters) => {
         receivedFilters = filters;
-        return emptyKpis;
+        const { topProductsByGmv, topProductsByRevenue, revenueTrend, ...summary } = emptyKpis;
+        void topProductsByGmv;
+        void topProductsByRevenue;
+        void revenueTrend;
+        return summary;
       },
       getRevenueTrend: async () => [],
       getTopProducts: async () => [],
@@ -50,9 +57,9 @@ describe('GetKpis', () => {
     const filters = {
       from: '2018-01-01',
       to: '2018-01-31',
-      orderStatus: 'delivered',
-      productCategory: 'health_beauty',
-      customerState: 'SP',
+      order_status: 'delivered',
+      product_category_name: 'health_beauty',
+      customer_state: 'SP',
     };
 
     await new GetKpis(repository).execute(filters);
@@ -63,8 +70,15 @@ describe('GetKpis', () => {
 
 function repositoryReturning(kpis: KpiSummary): AnalyticsRepository {
   return {
-    getKpis: async () => kpis,
-    getRevenueTrend: async () => [],
-    getTopProducts: async () => [],
+    getKpiSummary: async () => {
+      const { topProductsByGmv, topProductsByRevenue, revenueTrend, ...summary } = kpis;
+      void topProductsByGmv;
+      void topProductsByRevenue;
+      void revenueTrend;
+      return summary;
+    },
+    getRevenueTrend: async () => kpis.revenueTrend,
+    getTopProducts: async (_filters, metric) =>
+      metric === 'gmv' ? kpis.topProductsByGmv : kpis.topProductsByRevenue,
   };
 }

@@ -1,4 +1,4 @@
-TRUNCATE clean.order_payments, clean.order_items, clean.orders, clean.customers, clean.products RESTART IDENTITY CASCADE;
+TRUNCATE clean.order_payments, clean.order_items, clean.orders, clean.customers, clean.products, clean.order_reviews, clean.sellers, clean.geolocation RESTART IDENTITY CASCADE;
 TRUNCATE gold.fact_sales, gold.dim_order, gold.dim_product, gold.dim_customer, gold.dim_date RESTART IDENTITY CASCADE;
 
 INSERT INTO clean.orders (
@@ -64,6 +64,53 @@ LEFT JOIN raw.product_category_name_translation t
 WHERE p.product_id IS NOT NULL
 ORDER BY p.product_id;
 
+INSERT INTO clean.order_reviews (
+  review_id,
+  order_id,
+  review_score,
+  review_comment_title,
+  review_comment_message,
+  review_creation_date,
+  review_answer_timestamp
+)
+SELECT DISTINCT
+  review_id,
+  order_id,
+  review_score,
+  review_comment_title,
+  review_comment_message,
+  review_creation_date,
+  review_answer_timestamp
+FROM raw.order_reviews
+WHERE review_id IS NOT NULL
+  AND order_id IS NOT NULL;
+
+INSERT INTO clean.sellers (seller_id, seller_zip_code_prefix, seller_city, seller_state)
+SELECT DISTINCT
+  seller_id,
+  seller_zip_code_prefix,
+  seller_city,
+  seller_state
+FROM raw.sellers
+WHERE seller_id IS NOT NULL;
+
+INSERT INTO clean.geolocation (
+  geolocation_zip_code_prefix,
+  geolocation_lat,
+  geolocation_lng,
+  geolocation_city,
+  geolocation_state
+)
+SELECT DISTINCT ON (geolocation_zip_code_prefix)
+  geolocation_zip_code_prefix,
+  geolocation_lat,
+  geolocation_lng,
+  geolocation_city,
+  geolocation_state
+FROM raw.geolocation
+WHERE geolocation_zip_code_prefix IS NOT NULL
+ORDER BY geolocation_zip_code_prefix;
+
 WITH date_bounds AS (
   SELECT
     MIN(order_purchase_timestamp)::date AS min_date,
@@ -116,10 +163,18 @@ WITH payment_by_order AS (
   FROM clean.order_payments
   GROUP BY order_id
 ),
-item_count_by_order AS (
-  SELECT order_id, COUNT(*) AS item_count
-  FROM clean.order_items
-  GROUP BY order_id
+items_ranked AS (
+  SELECT
+    oi.order_id,
+    oi.order_item_id,
+    oi.product_id,
+    oi.item_price,
+    oi.freight_value,
+    ROW_NUMBER() OVER (PARTITION BY oi.order_id ORDER BY oi.order_item_id) AS rn,
+    COUNT(*) OVER (PARTITION BY oi.order_id) AS item_count,
+    COALESCE(pbo.total_payment, 0) AS total_payment
+  FROM clean.order_items oi
+  LEFT JOIN payment_by_order pbo ON pbo.order_id = oi.order_id
 )
 INSERT INTO gold.fact_sales (
   order_id,
@@ -144,17 +199,18 @@ SELECT
   dor.order_key,
   oi.item_price,
   oi.freight_value,
-  ROUND(COALESCE(pbo.total_payment, 0) / NULLIF(icbo.item_count, 0), 2) AS payment_value_allocated,
+  CASE
+    WHEN oi.rn < oi.item_count THEN ROUND(oi.total_payment / oi.item_count, 2)
+    ELSE oi.total_payment - ROUND(oi.total_payment / oi.item_count, 2) * (oi.item_count - 1)
+  END AS payment_value_allocated,
   o.order_status = 'delivered' AND o.order_delivered_customer_date IS NOT NULL AS is_delivered,
   o.order_status = 'canceled' AS is_canceled,
   o.order_status = 'delivered'
     AND o.order_delivered_customer_date IS NOT NULL
     AND o.order_estimated_delivery_date IS NOT NULL
     AND o.order_delivered_customer_date <= o.order_estimated_delivery_date AS is_on_time
-FROM clean.order_items oi
+FROM items_ranked oi
 JOIN clean.orders o ON o.order_id = oi.order_id
 JOIN gold.dim_customer dc ON dc.customer_id = o.customer_id
 JOIN gold.dim_product dp ON dp.product_id = oi.product_id
 JOIN gold.dim_order dor ON dor.order_id = o.order_id
-JOIN item_count_by_order icbo ON icbo.order_id = oi.order_id
-LEFT JOIN payment_by_order pbo ON pbo.order_id = oi.order_id;

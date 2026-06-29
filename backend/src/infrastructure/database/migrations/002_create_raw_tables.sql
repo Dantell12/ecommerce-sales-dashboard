@@ -51,3 +51,28 @@ CREATE TABLE IF NOT EXISTS raw.product_category_name_translation (
   product_category_name text,
   product_category_name_english text
 );
+
+CREATE TABLE IF NOT EXISTS raw.order_reviews (
+  review_id text,
+  order_id text,
+  review_score integer,
+  review_comment_title text,
+  review_comment_message text,
+  review_creation_date timestamptz,
+  review_answer_timestamp timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS raw.sellers (
+  seller_id text,
+  seller_zip_code_prefix text,
+  seller_city text,
+  seller_state text
+);
+
+CREATE TABLE IF NOT EXISTS raw.geolocation (
+  geolocation_zip_code_prefix text,
+  geolocation_lat double precision,
+  geolocation_lng double precision,
+  geolocation_city text,
+  geolocation_state text
+);

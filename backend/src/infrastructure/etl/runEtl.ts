@@ -40,7 +40,13 @@ const datasetFiles: DatasetFile[] = [
   {
     fileName: 'olist_order_payments_dataset.csv',
     tableName: 'raw.order_payments',
-    columns: ['order_id', 'payment_sequential', 'payment_type', 'payment_installments', 'payment_value'],
+    columns: [
+      'order_id',
+      'payment_sequential',
+      'payment_type',
+      'payment_installments',
+      'payment_value',
+    ],
   },
   {
     fileName: 'olist_customers_dataset.csv',
@@ -72,6 +78,35 @@ const datasetFiles: DatasetFile[] = [
     fileName: 'product_category_name_translation.csv',
     tableName: 'raw.product_category_name_translation',
     columns: ['product_category_name', 'product_category_name_english'],
+  },
+  {
+    fileName: 'olist_order_reviews_dataset.csv',
+    tableName: 'raw.order_reviews',
+    columns: [
+      'review_id',
+      'order_id',
+      'review_score',
+      'review_comment_title',
+      'review_comment_message',
+      'review_creation_date',
+      'review_answer_timestamp',
+    ],
+  },
+  {
+    fileName: 'olist_sellers_dataset.csv',
+    tableName: 'raw.sellers',
+    columns: ['seller_id', 'seller_zip_code_prefix', 'seller_city', 'seller_state'],
+  },
+  {
+    fileName: 'olist_geolocation_dataset.csv',
+    tableName: 'raw.geolocation',
+    columns: [
+      'geolocation_zip_code_prefix',
+      'geolocation_lat',
+      'geolocation_lng',
+      'geolocation_city',
+      'geolocation_state',
+    ],
   },
 ];
 
