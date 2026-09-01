@@ -118,19 +118,25 @@ const datasetBaseUrl =
   'https://raw.githubusercontent.com/olist/work-at-olist-data/master/datasets';
 
 async function main(): Promise<void> {
-  const connectionString = process.env.DATABASE_URL ?? process.env.LOCAL_DATABASE_URL;
+  const rawConnectionString = process.env.DATABASE_URL ?? process.env.LOCAL_DATABASE_URL;
   const isCloudDb = Boolean(
-    connectionString &&
-      (connectionString.includes('sslmode=') ||
-        connectionString.includes('neon.tech') ||
-        connectionString.includes('supabase.co') ||
-        connectionString.includes('render.com') ||
-        connectionString.includes('pooler.supabase.com') ||
+    rawConnectionString &&
+      (rawConnectionString.includes('sslmode=') ||
+        rawConnectionString.includes('neon.tech') ||
+        rawConnectionString.includes('supabase.co') ||
+        rawConnectionString.includes('supabase.com') ||
+        rawConnectionString.includes('render.com') ||
+        rawConnectionString.includes('pooler.supabase.com') ||
         process.env.NODE_ENV === 'production'),
   );
 
+  const cleanConnectionString =
+    isCloudDb && rawConnectionString
+      ? rawConnectionString.replace(/([?&])sslmode=[^&]+(&|$)/, '$1').replace(/[?&]$/, '')
+      : rawConnectionString;
+
   const client = new Client({
-    connectionString,
+    connectionString: cleanConnectionString,
     ssl: isCloudDb ? { rejectUnauthorized: false } : undefined,
   });
 
