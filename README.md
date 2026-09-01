@@ -1,27 +1,48 @@
-# Ecommerce Sales Dashboard
+# 📊 E-Commerce Sales Analytics & Dashboard
 
-Dashboard full-stack para monitorear ventas del dataset público **Brazilian E-Commerce Public Dataset by Olist**. Construido con Next.js, Express, PostgreSQL y Prisma siguiendo arquitectura hexagonal.
+[![Next.js](https://img.shields.io/badge/Next.js-14.2-black?style=flat&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-18.3-blue?style=flat&logo=react)](https://reactjs.org/)
+[![Express](https://img.shields.io/badge/Express-4.21-lightgrey?style=flat&logo=express)](https://expressjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat&logo=postgresql)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=flat&logo=prisma)](https://www.prisma.io/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker)](https://www.docker.com/)
+[![Vitest](https://img.shields.io/badge/Testing-Vitest-6E9F18?style=flat&logo=vitest)](https://vitest.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Conformidad:** 94-97% vs Prueba Técnica  
-**Status:** ✅ Listo para entrevista
+Dashboard analítico full-stack de alto rendimiento para monitorear, analizar y proyectar el desempeño comercial sobre el **Brazilian E-Commerce Public Dataset by Olist** (~100k órdenes, ~112k ítems de venta). 
+
+Diseñado bajo principios de ingeniería de software robustos: **Arquitectura Hexagonal (Ports & Adapters)** en el backend, **Arquitectura Medallón (Capas Raw → Clean → Gold / Star Schema)** en PostgreSQL y un frontend interactivo moderno en **Next.js 14**.
 
 ---
 
-## 🚀 Quick Start (5 minutos)
+## 🌐 Live Demo en Producción
+
+* **Frontend Dashboard (Vercel):** [https://ecommerce-sales-dashboard-frontend.vercel.app/](https://ecommerce-sales-dashboard-frontend.vercel.app/)
+* **Backend API (Render):** [https://ecommerce-sales-dashboard-backend.onrender.com/health](https://ecommerce-sales-dashboard-backend.onrender.com/health)
+* **Base de Datos (Supabase):** PostgreSQL Serverless en la nube con esquemas `raw`, `clean` y `gold` cargados.
+
+---
+
+## 🚀 Quick Start con Docker (5 minutos)
+
+Para levantar el entorno completo de forma local con Docker Compose (Frontend, Backend y Base de Datos):
 
 ```bash
-# 1. Clonar y preparar entorno
-git clone <repo>
-cd proyecto
+# 1. Clonar el repositorio
+git clone https://github.com/Dantell12/ecommerce-sales-dashboard.git
+cd ecommerce-sales-dashboard
+
+# 2. Configurar variables de entorno
 cp .env.example .env
 
-# 2. Levantar infraestructura
+# 3. Levantar infraestructura en contenedores
 docker compose up --build -d
 
-# 3. Cargar datos
+# 4. Ejecutar el pipeline ETL automatizado (descarga datos y puebla Postgres)
 docker compose exec backend npm run etl:run
 
-# 4. Acceder
+# 5. Acceder a las aplicaciones locales:
 # Frontend: http://localhost:3000
 # Backend:  http://localhost:4000
 # Health:   http://localhost:4000/health
@@ -31,498 +52,320 @@ docker compose exec backend npm run etl:run
 
 ## 📋 Requisitos Previos
 
-| Requisito | Versión Mínima |
-|-----------|---|
-| Node.js | 18.x |
-| npm | 9.x |
-| Docker | 20.10+ |
-| Docker Compose | 2.0+ |
-| PostgreSQL | 15 (en Docker) |
+| Herramienta | Versión Recomendada |
+| :--- | :--- |
+| **Node.js** | `>= 18.x` (LTS) |
+| **npm** | `>= 9.x` |
+| **Docker Engine** | `>= 20.10+` |
+| **Docker Compose** | `>= 2.0+` |
+| **PostgreSQL** | `15` o `16` (incluido en Docker Compose) |
 
-**Puertos requeridos:** 3000 (frontend), 4000 (backend), 5432 (PostgreSQL)
+**Puertos utilizados:** `3000` (Frontend), `4000` (Backend), `5432` (PostgreSQL).
+
+---
+
+## 💡 Características Principales
+
+* 📈 **Resumen Ejecutivo de KPIs:**
+  * **GMV (Gross Merchandise Value):** Suma bruta de precios de productos vendidos.
+  * **Revenue (Paid):** Ingresos reales recaudados a través de pagos aprobados.
+  * **Orders:** Conteo de órdenes únicas procesadas.
+  * **AOV (Average Order Value):** Ticket promedio por orden.
+  * **Items per Order:** Ratio de ítems comprados por orden.
+  * **Cancellation Rate:** Tasa porcentual de órdenes canceladas.
+  * **On-Time Delivery Rate:** Porcentaje de entregas realizadas dentro o antes de la fecha estimada.
+  * **Shipping (Flete):** Costo acumulado de envíos.
+* 🔍 **Filtros Globales Multidimensionales:**
+  * Rango de fechas dinámico con validación de límites.
+  * Selector por **Estado del Cliente** (27 estados de Brasil).
+  * Combobox con búsqueda predictiva y scroll continuo para **73 Categorías de Producto**.
+  * Filtro por **Estado del Pedido** (`delivered`, `shipped`, `canceled`, etc.).
+* 🏆 **Rankings Top N Dinámicos:**
+  * Tabla interactiva de los productos más vendidos con alternancia en tiempo real por **GMV** o por **Revenue**.
+* 📊 **Tendencia Temporal con Zero-Filling:**
+  * Gráficos interactivos de ingresos y volumen de pedidos con granularidad por **Día** o por **Semana**, garantizando continuidad de fechas con series temporales (`generate_series`).
 
 ---
 
 ## ⚙️ Stack Tecnológico
 
-| Capa | Tecnología | Rol |
-|------|-----------|-----|
-| **Frontend** | Next.js + React + TypeScript | Dashboard interactivo, KPIs, Rankings |
-| **Backend** | Express + TypeScript + Prisma | API REST, validación, casos de uso |
-| **BD** | PostgreSQL | Schemas `raw`, `clean`, `gold` (modelo estrella) |
-| **Infraestructura** | Docker Compose | Orquestación de 3 servicios |
-| **Linting** | ESLint + Prettier | Código consistente |
-| **Testing** | Vitest + Supertest | Unit tests + integration tests |
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Next.js 14 + React 18                    │
+│                 (App Router, TypeScript, UI)                │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ HTTPS / JSON REST API
+┌──────────────────────────────▼──────────────────────────────┐
+│                  Express.js + TypeScript                    │
+│                 (Arquitectura Hexagonal)                    │
+│  [Adapters / HTTP] ──► [Use Cases] ──► [Domain Contracts]   │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ Prisma ORM + SQL Nativo
+┌──────────────────────────────▼──────────────────────────────┐
+│                    PostgreSQL 16 Engine                     │
+│    ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   │
+│    │  raw schema  │──►│ clean schema │──►│ gold schema  │   │
+│    │  (Ingestión) │   │ (Limpieza)   │   │(Star Schema) │   │
+│    └──────────────┘   └──────────────┘   └──────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+| Capa | Tecnología | Propósito |
+| :--- | :--- | :--- |
+| **Frontend** | Next.js 14, React 18, Recharts, CSS Modules | Interfaz moderna, gráficos responsivos, combobox accesible. |
+| **Backend** | Node.js, Express, TypeScript, Prisma ORM | API REST, validación estricta de DTOs, casos de uso desacoplados. |
+| **Data Engine** | PostgreSQL 16 | Almacenamiento analítico en arquitectura medallón. |
+| **DevOps** | Docker Compose, Dockerfiles Multi-stage | Orquestación reproducible de 3 servicios con healthchecks y volúmenes persistentes. |
+| **Testing** | Vitest, Supertest | Pruebas unitarias de casos de uso y pruebas de integración de endpoints REST. |
 
 ---
 
-## 📦 Arquitectura en 30 segundos
+## 🏛️ Arquitectura de Software (Hexagonal / Ports & Adapters)
+
+El backend está estructurado para desacoplar completamente la lógica de negocio del framework web y del motor de base de datos:
 
 ```
-Usuario → Frontend → API REST → Use Cases → Domain Port → Prisma/SQL → gold.fact_sales
+backend/src/
+├── domain/                  # Entidades, Value Objects y Contratos (Ports)
+│   └── analytics.ts         # AnalyticsRepository (Port) y tipos de dominio
+├── application/             # Casos de Uso (Application Layer)
+│   ├── getKpis.ts           # Orquestación de cálculo de KPIs
+│   ├── getRevenueTrend.ts   # Orquestación de serie temporal
+│   └── getTopProducts.ts    # Orquestación de ranking de productos
+├── adapters/                # Adaptadores Primarios (Entrada)
+│   └── http/                # Express Controllers, Routes, DTOs y validación
+└── infrastructure/          # Adaptadores Secundarios (Salida / Persistencia)
+    ├── database/            # Implementación con Prisma (PrismaAnalyticsRepository)
+    └── etl/                 # Pipeline de extracción, transformación y carga (runEtl.ts)
 ```
 
-**Modelo Hexagonal:**
-- **Domain:** Interfaces y tipos (AnalyticsRepository, KpiSummary, etc)
-- **Application:** Casos de uso (GetKpis, GetRevenueTrend, GetTopProducts)
-- **Adapters:** HTTP routes, validación, DTOs
-- **Infrastructure:** Implementación con Prisma/SQL
-
-**Beneficio:** Application NO conoce Prisma. Testeable. Escalable.
-
-```
-        [ HTTP Adapter ]
-             ↓ depende de
-      [ Application Use Cases ]
-             ↓ depende de
-        [ Domain Contracts ]
-             ↑ implementado por
-        [ Infrastructure Layer ]
-        (Prisma + PostgreSQL)
-```
+**Ventajas clave:**
+* **Testabilidad:** Los casos de uso se prueban unitariamente utilizando *Mocks* sin requerir una conexión activa a la base de datos.
+* **Mantenibilidad:** Cambiar la base de datos o el ORM solo requiere implementar una nueva clase que cumpla la interfaz `AnalyticsRepository`.
 
 ---
 
-## 🗄️ Modelo de Datos (Estrella)
+## 🗄️ Modelo de Datos (Medallion & Star Schema)
 
-**Grano:** 1 fila = 1 item de orden (`order_id + order_item_id`)
+El pipeline de datos organiza la información en 3 esquemas secuenciales:
 
-| Tabla | Tipo | Contenido |
-|-------|------|----------|
-| `gold.fact_sales` | Fact | `item_price`, `payment_value_allocated`, `freight_value`, flags (`is_canceled`, `is_delivered`, `is_on_time`) + FKs |
-| `gold.dim_date` | Dimensión | Calendario (1000 filas) |
-| `gold.dim_customer` | Dimensión | Cliente + geo (state, city) |
-| `gold.dim_product` | Dimensión | Producto + categoría |
-| `gold.dim_order` | Dimensión | Orden + status + timestamps |
+1. **`raw` (Ingestión cruda):** Refleja fielmente los archivos CSV originales descargados desde el repositorio de Olist con tipado base.
+2. **`clean` (Capa conformada):** Normalización, limpieza de texto, deduplicación y casteo de tipos de datos.
+3. **`gold` (Esquema Estrella Analítico):** Optimizado para consultas OLAP de alta velocidad.
 
-**Total de datos:** ~850k filas en fact, ~100k órdenes
+### Esquema Estrella (`gold`)
+
+* **Grano de la tabla de hechos:** **1 fila por ítem de orden** (`order_id + order_item_id`).
+
+```
+                    ┌─────────────────────────┐
+                    │      gold.dim_date      │
+                    │─────────────────────────│
+                    │ date_key (PK)           │
+                    │ full_date               │
+                    │ year, quarter, month... │
+                    └────────────┬────────────┘
+                                 │
+                                 │ 1:N
+┌───────────────────────┐        │        ┌────────────────────────┐
+│   gold.dim_customer   │        │        │    gold.dim_product    │
+│───────────────────────│        │        │────────────────────────│
+│ customer_key (PK)     │──┐     │     ┌──│ product_key (PK)       │
+│ customer_id           │  │     │     │  │ product_id             │
+│ state, city           │  │ 1:N │ 1:N │  │ category               │
+└───────────────────────┘  │     │     │  └────────────────────────┘
+                           │     │     │
+                        ┌──▼─────▼─────▼───────────────┐
+                        │       gold.fact_sales        │
+                        │──────────────────────────────│
+                        │ order_id, order_item_id (PK) │
+                        │ date_key (FK)                │
+                        │ customer_key (FK)            │
+                        │ product_key (FK)             │
+                        │ order_key (FK)               │
+                        │ item_price                   │
+                        │ freight_value                │
+                        │ payment_value_allocated      │
+                        │ is_delivered, is_canceled    │
+                        │ is_on_time                   │
+                        └──────────────▲───────────────┘
+                                       │ 1:N
+                        ┌──────────────┴───────────────┐
+                        │       gold.dim_order         │
+                        │──────────────────────────────│
+                        │ order_key (PK)               │
+                        │ order_id                     │
+                        │ status                       │
+                        │ order_purchase_timestamp     │
+                        │ delivered_customer_date      │
+                        │ estimated_delivery_date      │
+                        └──────────────────────────────┘
+```
+
+### Regla de Asignación Exacta de Revenue (`payment_value_allocated`)
+En el dataset de Olist, el pago se registra a nivel de orden, pero la tabla de hechos vive a nivel de ítem. Para evitar discrepancias de redondeo y garantizar que la suma de ítems sea exactamente igual al total pagado:
+
+$$\text{Ítems } 1 \dots (n-1): \text{ROUND}\left(\frac{\text{Pago Total}}{n}, 2\right)$$
+
+$$\text{Último Ítem } n: \text{Pago Total} - \sum_{i=1}^{n-1} \text{Pago Asignado}_i$$
 
 ---
 
-## 🔌 API Endpoints
+## 🔌 API REST Endpoints
 
 ### 1. `GET /health`
-**Propósito:** Healthcheck para Docker  
-**Respuesta:** `{ "status": "ok" }`
+* **Descripción:** Endpoint de verificación de estado y disponibilidad.
+* **Respuesta:**
+  ```json
+  {
+    "status": "ok"
+  }
+  ```
+
+---
 
 ### 2. `GET /kpis`
-**Query params:**
-- `from` (obligatorio): YYYY-MM-DD
-- `to` (obligatorio): YYYY-MM-DD
-- `customer_state` (opcional): "SP", "RJ", etc
-- `product_category_name` (opcional): "electronics", "health_beauty", etc
-- `order_status` (opcional): "delivered", "canceled", "shipped", etc
+* **Descripción:** Retorna el resumen consolidado de KPIs analíticos en el rango especificado.
+* **Parámetros Query:**
+  * `from` *(requerido, YYYY-MM-DD)*: Fecha inicial.
+  * `to` *(requerido, YYYY-MM-DD)*: Fecha final.
+  * `customer_state` *(opcional)*: Filtro por sigla de estado brasileño (ej. `SP`, `RJ`).
+  * `product_category_name` *(opcional)*: Filtro por categoría (ej. `health_beauty`).
+  * `order_status` *(opcional)*: Filtro por estado del pedido (ej. `delivered`).
+* **Ejemplo de Respuesta:**
+  ```json
+  {
+    "gmv": 1584320.50,
+    "shipping": 182300.00,
+    "revenuePaid": 1698760.20,
+    "orders": 14230,
+    "aov": 119.38,
+    "itemsPerOrder": 1.16,
+    "cancellationRate": 0.012,
+    "onTimeDeliveryRate": 0.915
+  }
+  ```
 
-**Restricciones:**
-- Rango máximo: 731 días
-- Formato: YYYY-MM-DD exacto
-
-**Ejemplo:**
-```bash
-GET /kpis?from=2017-01-01&to=2017-12-31&customer_state=SP
-```
-
-**Respuesta:**
-```json
-{
-  "gmv": 1584320,
-  "shipping": 182300,
-  "revenuePaid": 1698760,
-  "orders": 14230,
-  "aov": 119.37,
-  "itemsPerOrder": 1.16,
-  "cancellationRate": 0.01,
-  "onTimeDeliveryRate": 0.91,
-  "topProductsByGmv": [...],
-  "topProductsByRevenue": [...],
-  "revenueTrend": [...]
-}
-```
+---
 
 ### 3. `GET /trend/revenue`
-**Query params:** from, to, grain (`day|week`), filtros opcionales  
-**Respuesta:** Array de puntos temporales con Revenue + Orders (rellena ceros)
+* **Descripción:** Serie temporal de ingresos y volumen de pedidos.
+* **Parámetros Query:** `from`, `to`, `grain` (`day` o `week`), y filtros opcionales.
+* **Ejemplo de Respuesta:**
+  ```json
+  [
+    {
+      "period": "2017-01-01",
+      "revenuePaid": 1250.40,
+      "orders": 11
+    },
+    {
+      "period": "2017-01-02",
+      "revenuePaid": 3410.80,
+      "orders": 28
+    }
+  ]
+  ```
+
+---
 
 ### 4. `GET /products/top`
-**Query params:** from, to, metric (`gmv|revenue`), limit (default: 10)  
-**Respuesta:** Array de productos ordenados por métrica
+* **Descripción:** Ranking de los productos más vendidos.
+* **Parámetros Query:** `from`, `to`, `metric` (`gmv` o `revenue`), `limit` *(default: 10)*.
+* **Ejemplo de Respuesta:**
+  ```json
+  [
+    {
+      "productId": "aca2eb7d00ea1a7b8ebd4e68314663af",
+      "category": "furniture_decor",
+      "gmv": 64320.00,
+      "revenuePaid": 69450.10,
+      "orders": 482
+    }
+  ]
+  ```
 
 ---
 
-## 📊 KPIs Explicados
+## 🧪 Pruebas Automatizadas y Calidad de Código
 
-| KPI | Cálculo | Notas |
-|-----|---------|-------|
-| **GMV** | SUM(item_price) | Gross Merchandise Value |
-| **Revenue Paid** | SUM(payment_value_allocated) | Pagos recibidos |
-| **Orders** | COUNT(DISTINCT order_id) | Órdenes únicas |
-| **AOV** | Revenue / Orders | Valor promedio por orden (0 si no hay órdenes) |
-| **Items per Order** | COUNT(items) / Orders | Promedio de items |
-| **Cancellation Rate** | canceled_orders / total_orders | NO incluye "unavailable" |
-| **On-Time Delivery** | on_time_delivered / total_delivered | Solo entre órdenes entregadas |
-
----
-## 🛠️ Setup
- 
-### Estructura de Variables de Entorno
- 
-Este proyecto usa **npm workspaces**, así que necesitas `.env` en múltiples lugares:
- 
-```
-proyecto/
-├── .env.example          ← Variables globales (template)
-├── backend/
-│   ├── .env              ← Variables del backend (crea manualmente)
-│   └── .env.example      ← Template del backend
-└── frontend/
-    └── .env.local        ← Variables del frontend (Next.js)
-```
- 
-**Importante:** `npm workspaces` no hereda `.env` de la raíz. Cada workspace busca su propio `.env` primero.
- 
----
- 
-### Opción 1: Docker Compose (Recomendado para Producción)
- 
-```bash
-# Clonar
-git clone <repo>
-cd proyecto
- 
-# 1. Crear .env en raíz (copiar template)
-cp .env.example .env
- 
-# 2. Crear .env en backend (IMPORTANTE para npm workspaces)
-cp backend/.env.example backend/.env
- 
-# 3. Construir e iniciar
-docker compose up --build -d
- 
-# 4. Cargar datos
-docker compose exec backend npm run etl:run
- 
-# 5. Verificar
-docker compose ps  # Ver servicios corriendo
-curl http://localhost:4000/health
-```
- 
-**Contenido de `/.env` (raíz):**
-```env
-POSTGRES_USER=ecommerce
-POSTGRES_PASSWORD=ecommerce
-POSTGRES_DB=ecommerce_sales
-POSTGRES_PORT=5432
-
-DATABASE_URL=postgresql://ecommerce:ecommerce@db:5432/ecommerce_sales?schema=gold
-LOCAL_DATABASE_URL=postgresql://ecommerce:ecommerce@localhost:5432/ecommerce_sales?schema=gold
-
-BACKEND_PORT=4000
-FRONTEND_PORT=3000
-API_BASE_URL=http://backend:4000
-NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
-
-OLIST_DATASET_BASE_URL=https://raw.githubusercontent.com/olist/work-at-olist-data/master/datasets
-PGADMIN_DEFAULT_EMAIL=admin@admin.com
-PGADMIN_DEFAULT_PASSWORD=admin
-```
- 
-**Contenido de `/backend/.env` (CRÍTICO):**
-```env
-# Cuando ejecutas con Docker Compose, la BD está en el servicio "db"
-DATABASE_URL=postgresql://ecommerce:ecommerce@db:5432/ecommerce_sales
- 
-# URL para descargar CSVs en el ETL
-OLIST_DATASET_BASE_URL=https://raw.githubusercontent.com/olist/work-at-olist-data/master/datasets
-```
- 
-**Acceder:**
-- Frontend: http://localhost:3000
-- Backend:  http://localhost:4000
----
- 
-### Opción 2: Desarrollo Local (Sin Docker en Backend)
- 
-```bash
-# 1. Clonar y preparar
-git clone <repo>
-cd proyecto
- 
-# 2. Crear archivos .env necesarios
-cp .env.example .env
-cp backend/.env.example backend/.env
- 
-# 3. Editar backend/.env para conectar a PostgreSQL local
-# Cambiar DATABASE_URL a:
-# DATABASE_URL=postgresql://ecommerce:ecommerce@localhost:5432/ecommerce_sales
- 
-# 4. Instalar dependencias
-npm install
-npm run prisma:generate --workspace backend
- 
-# 5. Levantar solo la BD en Docker
-docker compose up -d db
- 
-# 6. Esperar a que BD esté lista
-docker compose exec db pg_isready -U ecommerce
- 
-# 7. Cargar datos
-npm run etl:run
- 
-# 8. Correr frontend y backend (dos terminales)
-# Terminal 1:
-npm run dev --workspace backend   # Escucha puerto 4000
- 
-# Terminal 2:
-npm run dev --workspace frontend  # Escucha puerto 3000
-```
- 
-**Contenido de `/backend/.env` (desarrollo local):**
-```env
-# Conecta a PostgreSQL en tu máquina (no en Docker)
-DATABASE_URL=postgresql://ecommerce:ecommerce@localhost:5432/ecommerce_sales
- 
-# URL para descargar CSVs
-OLIST_DATASET_BASE_URL=https://raw.githubusercontent.com/olist/work-at-olist-data/master/datasets
-```
- 
-**Acceder:**
-- Frontend: http://localhost:3000
-- Backend:  http://localhost:4000
----
- 
-### Diferencia: DATABASE_URL en Docker vs Local
- 
-| Contexto | DATABASE_URL |
-|----------|---|
-| **Con Docker Compose** | `postgresql://ecommerce:ecommerce@db:5432/ecommerce_sales` |
-| **Desarrollo local** | `postgresql://ecommerce:ecommerce@localhost:5432/ecommerce_sales` |
- 
-- `db` es el nombre del servicio en `docker-compose.yml` (Docker lo resuelve automáticamente)
-- `localhost` es tu máquina (cuando PostgreSQL corre sin Docker)
-
----
-
-## 🧪 Testing
+El proyecto cuenta con suites de pruebas unitarias y de integración:
 
 ```bash
-# Lint (solo código)
+# Ejecutar pruebas unitarias (Vitest)
+npm test --workspace=@ecommerce-sales/backend
+
+# Ejecutar pruebas de integración de API con Supertest
+npm run test:integration --workspace=@ecommerce-sales/backend
+
+# Validación estática de código (ESLint)
 npm run lint
 
-# Lint + Fix (reparar automáticamente)
+# Formateo de código (Prettier)
 npm run format
-
-# Compile TypeScript
-npm run build
-
-# Tests unitarios (sin BD)
-cd backend
-npm test
-
-# Tests de integración (con BD)
-npm run test:integration
-
-# Todos los tests
-npm test --workspace backend
 ```
 
 ---
 
-## 🔧 Troubleshooting
+## 🛠️ Ejecución en Desarrollo Local (Sin Docker)
 
-### "docker: command not found"
-→ Instala Docker Desktop (Mac/Windows) o Docker Engine (Linux)
+Si prefieres ejecutar los servicios directamente en tu entorno local:
 
-### "Port 3000/4000 already in use"
-→ Identifica y mata el proceso:
 ```bash
-lsof -i :3000
-kill -9 <PID>
-```
+# 1. Instalar dependencias del monorepo
+npm install
 
-### "ECONNREFUSED at localhost:5432"
-→ Verifica que BD está corriendo:
-```bash
-docker compose ps db
-docker compose logs db
-```
+# 2. Generar cliente de Prisma
+npm run prisma:generate --workspace=@ecommerce-sales/backend
 
-### "ETL falla: no such file or directory"
-→ Verifica que PostgreSQL está healthy:
-```bash
-docker compose exec db pg_isready -U postgres
-```
+# 3. Configurar tu base de datos PostgreSQL local en .env y ejecutar el ETL
+npm run etl:run --workspace=@ecommerce-sales/backend
 
-### "Frontend muestra 'error loading data'"
-→ Checa consola del navegador y que `NEXT_PUBLIC_API_BASE_URL` es correcto
+# 4. Iniciar Backend (Puerto 4000)
+npm run dev --workspace=@ecommerce-sales/backend
 
-### "GET /kpis retorna vacío después de ETL"
-→ Verifica que ETL terminó sin error:
-```bash
-docker compose exec db psql -U postgres -d ecommerce -c "SELECT COUNT(*) FROM gold.fact_sales;"
+# 5. Iniciar Frontend (Puerto 3000)
+npm run dev --workspace=@ecommerce-sales/frontend
 ```
 
 ---
 
-## 📝 Estructura de Carpetas
+## 📁 Estructura del Repositorio
 
 ```
-proyecto/
-├── frontend/                     # Next.js + React
+ecommerce-sales-dashboard/
+├── backend/
 │   ├── src/
-│   │   ├── components/           # Dashboard, KpiCard, Charts
-│   │   ├── hooks/                # useDashboardData
-│   │   ├── services/             # api.ts
-│   │   ├── types/                # TypeScript interfaces
-│   │   └── app/                  # Next.js app router
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── backend/                      # Express + TypeScript
-│   ├── src/
-│   │   ├── domain/               # analytics.ts (puertos e interfaces)
-│   │   ├── application/          # getKpis.ts, getRevenueTrend.ts, etc
-│   │   ├── adapters/http/        # routes.ts, validation.ts
-│   │   ├── infrastructure/       # Prisma, SQL, ETL
-│   │   └── index.ts              # Entry point
+│   │   ├── adapters/http/        # Controladores, rutas y middlewares de Express
+│   │   ├── application/          # Casos de uso de negocio (Use Cases)
+│   │   ├── domain/               # Entidades, value objects e interfaces (Ports)
+│   │   ├── infrastructure/       # Prisma Client, migraciones SQL nativas y ETL
+│   │   └── index.ts              # Punto de entrada del servidor
 │   ├── tests/
-│   │   ├── unit/                 # Tests de casos de uso
-│   │   └── integration/          # Tests de API
+│   │   ├── unit/                 # Tests unitarios de casos de uso
+│   │   └── integration/          # Tests de integración HTTP del API
 │   ├── prisma/
-│   │   └── schema.prisma         # Schema de Prisma (solo gold)
-│   ├── package.json
-│   └── tsconfig.json
+│   │   └── schema.prisma         # Definición del modelo analítico (gold)
+│   ├── Dockerfile
+│   └── package.json
 │
-├── docker-compose.yml            # Orquestación: db, backend, frontend
-├── docker-compose.pgadmin.yml    # Override opcional para pgAdmin
-├── .env.example
+├── frontend/
+│   ├── src/
+│   │   ├── app/                  # App Router de Next.js 14 y estilos globales
+│   │   ├── components/           # Dashboard, Combobox, Charts y Componentes UI
+│   │   ├── hooks/                # Custom hooks (useDashboardData)
+│   │   ├── services/             # Cliente HTTP API
+│   │   └── types/                # Definiciones de tipos TypeScript
+│   ├── Dockerfile
+│   └── package.json
+│
+├── docker-compose.yml            # Orquestación de servicios: db, backend, frontend
+├── .env.example                  # Plantilla de variables de entorno documentadas
 └── README.md
 ```
 
 ---
 
-## 🌳 Dataset
-
-El ETL descarga y carga **9 CSV files** desde GitHub:
-
-| Archivo | Tablas creadas | Filas aprox |
-|---------|---|---|
-| `olist_orders_dataset.csv` | raw.orders | 100k |
-| `olist_order_items_dataset.csv` | raw.order_items | 850k |
-| `olist_order_payments_dataset.csv` | raw.order_payments | 120k |
-| `olist_customers_dataset.csv` | raw.customers | 100k |
-| `olist_products_dataset.csv` | raw.products | 32k |
-| `product_category_name_translation.csv` | raw.product_category_translation | 71 |
-| `olist_order_reviews_dataset.csv` | raw.order_reviews | 100k |
-| `olist_sellers_dataset.csv` | raw.sellers | 3.5k |
-| `olist_geolocation_dataset.csv` | raw.geolocation | 1M |
-
-**Total:** ~2M rows descargadas, ~850k en gold.fact_sales
-
----
-
-## 🔑 Decisiones Técnicas Clave
-
-### 1. 3 Schemas (raw → clean → gold)
-- **raw:** Espejo puro de CSVs (auditoría)
-- **clean:** Datos normalizados (tipos, nulls)
-- **gold:** Modelo estrella analítico
-
-### 2. payment_value_allocated (Revenue exacto)
-Olist paga a nivel orden, but fact está a nivel item. Solución:
-```
-Ítems 1-n: ROUND(pago_total / cantidad_items, 2)
-Ítem n (último): pago_total - SUM(ítems anteriores)
-→ Garantiza: SUM(payment_allocated) = pago_total exactamente
-```
-
-### 3. Trend con zero-fill
-No omite períodos sin ventas. `generate_series` + `LEFT JOIN` garantiza todos los días/semanas en el rango.
-
-### 4. Grano de fact (item level)
-Una fila = 1 item de orden. Permite agregar por cualquier dimensión sin perder precisión.
-
-### 5. Arquitectura Hexagonal
-- Application NO conoce Prisma
-- Testeable (mock repositorio)
-- Escalable (agregar use cases sin romper otros)
-
----
-
-## 📞 Comandos Útiles
-
-```bash
-# Desarrollo
-npm run dev --workspace frontend   # Next.js dev server
-npm run dev --workspace backend    # Express dev server
-npm run lint                       # Lint ambos workspaces
-npm run format                     # Prettier auto-fix
-
-# Data
-npm run etl:run                    # Cargar CSVs y transformar
-npm run etl:run --workspace backend
-
-# Testing
-npm test --workspace backend       # Unit tests
-npm run test:integration --workspace backend
-
-# Docker
-docker compose up --build          # Levantar todo
-docker compose down                # Apagar todo
-docker compose exec backend bash   # Shell en backend
-docker compose exec db psql -U postgres  # CLI PostgreSQL
-docker compose logs -f backend     # Ver logs en vivo
-
-# Database
-docker compose exec db psql -U postgres -d ecommerce
-  → \dt                  # List tables
-  → \d gold.fact_sales   # Describe table
-  → SELECT COUNT(*) FROM gold.fact_sales;
-```
-
----
-
-## 🚀 Deployment
-
-### Production Checklist
-- [ ] `npm run lint` pasa sin errores
-- [ ] `npm run build` genera artifacts
-- [ ] `npm test --workspace backend` pasa
-- [ ] `docker compose config` valida syntax
-- [ ] `docker compose up --build` ejecuta sin errores
-- [ ] `docker compose exec backend npm run etl:run` carga datos
-- [ ] `curl http://localhost:4000/health` retorna ok
-- [ ] `curl http://localhost:4000/kpis?from=2017-01-01&to=2017-12-31` retorna datos
-
-### En la Nube
-- Usar imagen oficial Node 18 Alpine
-- PostgreSQL managed (AWS RDS, Azure Database, etc)
-- Frontend en CDN (Vercel, Netlify, CloudFront)
-- Backend en contenedor (AWS ECS, GCP Cloud Run, etc)
-
----
-
-## 📝 Changelog
-
-### v1.0 (2026-06-29)
-- ✅ Implementación completa
-- ✅ 94-97% conformidad con Prueba Técnica
-- ✅ Arquitectura hexagonal
-- ✅ ETL funcional (9 CSVs)
-- ✅ Tests unitarios + integración
-- ✅ Docker Compose con 3 servicios
-
----
-
 ## 📄 Licencia
 
-MIT
-
----
-
-## 📧 Contacto
-
-Para preguntas o feedback sobre el proyecto, contacta a: [joelkevin387@gmail.com]
-
----
-
-**Última actualización:** 2026-06-29  
+Este proyecto está bajo la Licencia **MIT**. Consulta el archivo [LICENSE](file:///c:/Users/Usuario/OneDrive%20-%20utmachala.edu.ec/Personal/Proyectos/Pruebas%20T%C3%A9cnicas/ecommerce-sales-dashboard/LICENSE) para más información.
