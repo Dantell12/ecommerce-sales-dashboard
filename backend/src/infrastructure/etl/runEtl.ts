@@ -118,8 +118,20 @@ const datasetBaseUrl =
   'https://raw.githubusercontent.com/olist/work-at-olist-data/master/datasets';
 
 async function main(): Promise<void> {
+  const connectionString = process.env.DATABASE_URL ?? process.env.LOCAL_DATABASE_URL;
+  const isCloudDb = Boolean(
+    connectionString &&
+      (connectionString.includes('sslmode=') ||
+        connectionString.includes('neon.tech') ||
+        connectionString.includes('supabase.co') ||
+        connectionString.includes('render.com') ||
+        connectionString.includes('pooler.supabase.com') ||
+        process.env.NODE_ENV === 'production'),
+  );
+
   const client = new Client({
-    connectionString: process.env.DATABASE_URL ?? process.env.LOCAL_DATABASE_URL,
+    connectionString,
+    ssl: isCloudDb ? { rejectUnauthorized: false } : undefined,
   });
 
   await client.connect();

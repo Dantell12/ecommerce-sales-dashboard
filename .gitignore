@@ -46,3 +46,6 @@ graphify-out/cache/ast/e31fb4d8a1dd0cdbfa3c8f0ba80e7686b2c631c1a0f15158636ba7719
 graphify-out/cache/ast/eff05c54f73cb6742b9606fedef05ce8ef7cfd296767c4bd21734173e32cf813.json
 PROYECTO_DOCUMENTACION_ESTUDIO.md
 CODEX_CORRECTION_PROMPT.md
+.gemini/
+GEMINI.md
+.codex/

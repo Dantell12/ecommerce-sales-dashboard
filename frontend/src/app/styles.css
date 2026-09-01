@@ -235,12 +235,30 @@ button {
   right: 0;
   left: 0;
   z-index: 50;
-  overflow: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   max-height: 290px;
   border: 1px solid #dbe3ef;
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 22px 60px rgba(15, 23, 42, 0.16);
+}
+
+.combobox-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.combobox-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.combobox-menu::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.combobox-menu::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .combobox-option {

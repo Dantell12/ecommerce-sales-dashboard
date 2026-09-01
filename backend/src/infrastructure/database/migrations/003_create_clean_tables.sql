@@ -37,14 +37,16 @@ CREATE TABLE IF NOT EXISTS clean.products (
   category text
 );
 
+DROP TABLE IF EXISTS clean.order_reviews CASCADE;
 CREATE TABLE IF NOT EXISTS clean.order_reviews (
-  review_id text PRIMARY KEY,
+  review_id text NOT NULL,
   order_id text NOT NULL,
   review_score integer,
   review_comment_title text,
   review_comment_message text,
   review_creation_date timestamp,
-  review_answer_timestamp timestamp
+  review_answer_timestamp timestamp,
+  PRIMARY KEY (review_id, order_id)
 );
 
 CREATE TABLE IF NOT EXISTS clean.sellers (

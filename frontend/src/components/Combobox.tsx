@@ -26,6 +26,7 @@ export function Combobox({
 }: ComboboxProps) {
   const listboxId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState(value ?? '');
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -53,6 +54,13 @@ export function Combobox({
   useEffect(() => {
     setActiveIndex(0);
   }, [query]);
+
+  useEffect(() => {
+    if (isOpen && menuRef.current) {
+      const activeEl = menuRef.current.children[activeIndex] as HTMLElement | undefined;
+      activeEl?.scrollIntoView?.({ block: 'nearest' });
+    }
+  }, [activeIndex, isOpen]);
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -140,9 +148,9 @@ export function Combobox({
       </div>
 
       {isOpen ? (
-        <div className="combobox-menu" id={listboxId} role="listbox">
+        <div className="combobox-menu" id={listboxId} role="listbox" ref={menuRef}>
           {filteredOptions.length > 0 ? (
-            filteredOptions.slice(0, 12).map((option, index) => (
+            filteredOptions.map((option, index) => (
               <button
                 type="button"
                 id={`${listboxId}-${option.value}`}
